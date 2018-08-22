@@ -24,11 +24,14 @@
 #include <iostream>
 #include <commctrl.h>
 #include <time.h>
+#include <cstdint>
 //========================================
 #pragma comment(lib, "ws2_32.lib")
 //========================================
 #include "Utils.h"
 #include "detours.h"
+//========================================
+typedef unsigned char byte;
 //========================================
 #define lINFO 0
 #define lWARN 1

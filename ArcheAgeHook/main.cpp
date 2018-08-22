@@ -32,7 +32,6 @@ __declspec(dllexport) void start()
 	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ModuleTestThread, 0, 0, NULL);
 }
 
-
 BOOL WINAPI DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpvReserved)
 {
 	switch (dwReason)
@@ -40,7 +39,7 @@ BOOL WINAPI DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpvReserved)
 	case DLL_PROCESS_ATTACH:
 	{
 		DisableThreadLibraryCalls(hModule);
-		//CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ModuleTestThread, lpvReserved, 0, NULL);
+		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ModuleTestThread, lpvReserved, 0, NULL);
 	}
 	break;
 	case DLL_PROCESS_DETACH:

@@ -28,15 +28,46 @@ t_WSASend o_WSASend;
 t_WSARecv o_WSARecv;
 
 //////////////////////////////////////////////////////////////////////////
+
+byte Inline(unsigned int cry)
+{
+	cry += 0x2FCBD5U;
+	byte n = (cry >> 0x10);
+	n = (byte)(n & 0x0F7);
+	return (byte)(((int)n == 0) ? 0x0FE : n);
+}
+
+byte* StoCDecrypt(byte* BodyPacket, int Length)
+{
+	//int Length = sizeof(BodyPacket);
+	byte* Array = new byte[Length];
+	unsigned int cry = (unsigned int)(Length ^ 0x1F2175A0);
+	int n = 4 * (Length / 4);
+	for (int i = n - 1; i >= 0; i--)
+		Array[i] = (byte)((unsigned int)BodyPacket[i] ^ (unsigned int)Inline(cry));
+	for (int i = n; i < Length; i++)
+		Array[i] = (byte)((unsigned int)BodyPacket[i] ^ (unsigned int)Inline(cry));
+	return Array;
+}
+
+//////////////////////////////////////////////////////////////////////////
 int rc = 0;
 int WINAPI hook_WSARecv(SOCKET s, LPWSABUF lpBuffers, DWORD dwBufferCount, LPDWORD lpNumberOfBytesRecvd, LPDWORD lpFlags, LPWSAOVERLAPPED lpOverlapped, LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine){
 	
 	Logger(lINFO, "AGH", "Recv Packet S > C");
 	//Utils::HexDump((void*)lpBuffers->buf, lpBuffers->len);
 
-	char test[12];
-	sprintf(test, "logs\\WSARecv_%i.bin", rc);
+	char test[100];
+	ZeroMemory(test, 100);
+	sprintf(test, "logs\\Recv\\WSARecv_%i.bin", rc);
 	Utils::DumpFile(test, lpBuffers->buf, lpBuffers->len);
+
+	unsigned char* buff = (unsigned char*)lpBuffers->buf;
+	StoCDecrypt(buff, lpBuffers->len);
+
+	ZeroMemory(test, 100);
+	sprintf(test, "logs\\Recv\\Decrypt\\Recv_%i.bin", rc);
+	Utils::DumpFile(test, (const char*)buff, lpBuffers->len);
 
 	rc++;
 	return o_WSARecv(s, lpBuffers, dwBufferCount, lpNumberOfBytesRecvd, lpFlags, lpOverlapped, lpCompletionRoutine);
@@ -48,7 +79,8 @@ int WINAPI hook_WSASend(SOCKET s, LPWSABUF lpBuffers, DWORD dwBufferCount, LPDWO
 	Logger(lINFO, "AGH", "Send Packet C > S");
 	//Utils::HexDump((void*)lpBuffers->buf, lpBuffers->len);
 
-	char test[12];
+	char test[100];
+	ZeroMemory(test, 100);
 	sprintf(test, "logs\\WSASend_%i.bin", sc);
 	Utils::DumpFile(test, lpBuffers->buf, lpBuffers->len);
 
