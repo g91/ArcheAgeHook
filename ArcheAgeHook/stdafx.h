@@ -48,4 +48,6 @@ typedef unsigned char byte;
 #define lDEBUG 4
 
 void Logger(unsigned int lvl, const char* caller, const char* logline, ...);
+void Logger2(unsigned int lvl, const char* caller, const char* logline, ...);
+
 //========================================
