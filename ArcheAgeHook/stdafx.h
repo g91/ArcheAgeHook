@@ -25,6 +25,15 @@
 #include <commctrl.h>
 #include <time.h>
 #include <cstdint>
+#include <direct.h>
+#include <sstream>
+#include <iomanip>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <map>
+#include <algorithm>
+#include <inttypes.h>
 //========================================
 #pragma comment(lib, "ws2_32.lib")
 //========================================

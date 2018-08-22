@@ -1,0 +1,28 @@
+sub_564E7D6 = Inline
+0x55C1000
+0x564E7D6
+
+crynetwork.dll + 0x8D7D6
+
+
+char sub_564E7D6()
+{
+  char result; // al
+
+  dword_5698348 += 3132373;
+  result = BYTE2(dword_5698348) & 0xF7;
+  if ( !(dword_5698348 & 0xF70000) )
+    result = -2;
+  return result;
+}
+
+.text:0564E7D6 sub_564E7D6     proc near               ; CODE XREF: StoCEncrypt:loc_564E826?p
+.text:0564E7D6                                         ; StoCEncrypt:loc_564E848?p
+.text:0564E7D6                 add     dword_5698348, 2FCBD5h
+.text:0564E7E0                 mov     eax, dword_5698348
+.text:0564E7E5                 shr     eax, 10h
+.text:0564E7E8                 and     al, 0F7h
+.text:0564E7EA                 jnz     short locret_564E7EE
+.text:0564E7EC                 mov     al, 0FEh
+.text:0564E7EE
+.text:0564E7EE locret_564E7EE:                         ; CODE XREF: sub_564E7D6+14?j

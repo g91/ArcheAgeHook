@@ -1,0 +1,134 @@
+sub_564E7EF = StoCEncrypt
+0x55C1000
+0x564E7EF
+
+
+\x55\x8B\xEC\x51\x53\x56\x8B\xF0
+xxxxxxxx
+
+Pattern: 55 8B EC 51 53 56 8B F0
+Pattern Maker finished.
+
+[23:41:26] AGH: Starting ArcheAge Hook
+[23:41:26] AGH: Hooking ArcheAge CreateWindowEx
+[23:41:26] AGH: Hooking ArcheAge Packets
+[23:41:26] AGH: crynetwork.dll: 0x5490000
+[23:41:26] AGH: crynetwork.dll + Encrypt: 0x56C5FBC
+
+
+crynetwork.dll + 0x8D7EF
+
+
+char __usercall sub_564E7EF@<al>(int a1@<eax>, int a2, int a3)
+{
+  int v3; // esi
+  int v4; // ecx
+  int v5; // edi
+  _BYTE *v6; // ebx
+  int v7; // edx
+  int v8; // edx
+  int v9; // esi
+  char v10; // al
+  _BYTE *v11; // edx
+
+  v3 = a1;
+  dword_5698348 = a1 ^ 0x1F2175A0;
+  v4 = 4 * (a1 / 4);
+  v5 = a3;
+  if ( v4 - 1 >= 0 )
+  {
+    v6 = (_BYTE *)(v4 - 1 + a3);
+    do
+    {
+      *v6 = v6[a2 - a3] ^ ((int (*)(void))sub_564E7D6)();
+      --v6;
+    }
+    while ( v7 - 1 >= 0 );
+    v5 = a3;
+  }
+  if ( v4 < v3 )
+  {
+    v8 = v4 + v5;
+    v9 = v3 - v4;
+    do
+    {
+      v10 = sub_564E7D6(v4, v8);
+      *v11 = v11[a2 - v5] ^ v10;
+      v8 = (int)(v11 + 1);
+      --v9;
+    }
+    while ( v9 );
+  }
+  return 1;
+}
+
+text:0564E7EF ; =============== S U B R O U T I N E =======================================
+.text:0564E7EF
+.text:0564E7EF ; Attributes: bp-based frame
+.text:0564E7EF
+.text:0564E7EF StoCEncrypt     proc near
+.text:0564E7EF
+.text:0564E7EF var_4           = dword ptr -4
+.text:0564E7EF arg_0           = dword ptr  8
+.text:0564E7EF arg_4           = dword ptr  0Ch
+.text:0564E7EF
+.text:0564E7EF                 push    ebp
+.text:0564E7F0                 mov     ebp, esp
+.text:0564E7F2                 push    ecx
+.text:0564E7F3                 push    ebx
+.text:0564E7F4                 push    esi
+.text:0564E7F5                 mov     esi, eax
+.text:0564E7F7                 xor     eax, 1F2175A0h
+.text:0564E7FC                 mov     dword_5698348, eax
+.text:0564E801                 mov     eax, esi
+.text:0564E803                 cdq
+.text:0564E804                 and     edx, 3
+.text:0564E807                 lea     ecx, [edx+eax]
+.text:0564E80A                 sar     ecx, 2
+.text:0564E80D                 shl     ecx, 2
+.text:0564E810                 lea     edx, [ecx-1]
+.text:0564E813                 push    edi
+.text:0564E814                 mov     edi, [ebp+arg_4]
+.text:0564E817                 test    edx, edx
+.text:0564E819                 js      short loc_564E83A
+.text:0564E81B                 mov     eax, [ebp+arg_0]
+.text:0564E81E                 sub     eax, edi
+.text:0564E820                 lea     ebx, [edx+edi]
+.text:0564E823                 mov     [ebp+var_4], eax
+.text:0564E826
+.text:0564E826 loc_564E826:                            ; CODE XREF: StoCEncrypt+46?j
+.text:0564E826                 call    sub_564E7D6
+.text:0564E82B                 mov     edi, [ebp+var_4]
+.text:0564E82E                 xor     al, [edi+ebx]
+.text:0564E831                 mov     [ebx], al
+.text:0564E833                 dec     ebx
+.text:0564E834                 dec     edx
+.text:0564E835                 jns     short loc_564E826
+.text:0564E837                 mov     edi, [ebp+arg_4]
+.text:0564E83A
+.text:0564E83A loc_564E83A:                            ; CODE XREF: StoCEncrypt+2A?j
+.text:0564E83A                 cmp     ecx, esi
+.text:0564E83C                 jge     short loc_564E856
+.text:0564E83E                 mov     ebx, [ebp+arg_0]
+.text:0564E841                 sub     ebx, edi
+.text:0564E843                 lea     edx, [ecx+edi]
+.text:0564E846                 sub     esi, ecx
+.text:0564E848
+.text:0564E848 loc_564E848:                            ; CODE XREF: StoCEncrypt+65?j
+.text:0564E848                 call    sub_564E7D6
+.text:0564E84D                 xor     al, [edx+ebx]
+.text:0564E850                 mov     [edx], al
+.text:0564E852                 inc     edx
+.text:0564E853                 dec     esi
+.text:0564E854                 jnz     short loc_564E848
+.text:0564E856
+.text:0564E856 loc_564E856:                            ; CODE XREF: StoCEncrypt+4D?j
+.text:0564E856                 pop     edi
+.text:0564E857                 pop     esi
+.text:0564E858                 mov     al, 1
+.text:0564E85A                 pop     ebx
+.text:0564E85B                 leave
+.text:0564E85C                 retn
+.text:0564E85C StoCEncrypt     endp
+.text:0564E85C
+.

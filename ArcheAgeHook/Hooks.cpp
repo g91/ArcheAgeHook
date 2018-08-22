@@ -1,4 +1,5 @@
 #include "Hooks.h"
+#include "Encryption.h"
 
 //////////////////////////////////////////////////////////////////////////
 using namespace std;
@@ -28,29 +29,6 @@ t_WSASend o_WSASend;
 t_WSARecv o_WSARecv;
 
 //////////////////////////////////////////////////////////////////////////
-
-byte Inline(unsigned int cry)
-{
-	cry += 0x2FCBD5U;
-	byte n = (cry >> 0x10);
-	n = (byte)(n & 0x0F7);
-	return (byte)(((int)n == 0) ? 0x0FE : n);
-}
-
-byte* StoCDecrypt(byte* BodyPacket, int Length)
-{
-	//int Length = sizeof(BodyPacket);
-	byte* Array = new byte[Length];
-	unsigned int cry = (unsigned int)(Length ^ 0x1F2175A0);
-	int n = 4 * (Length / 4);
-	for (int i = n - 1; i >= 0; i--)
-		Array[i] = (byte)((unsigned int)BodyPacket[i] ^ (unsigned int)Inline(cry));
-	for (int i = n; i < Length; i++)
-		Array[i] = (byte)((unsigned int)BodyPacket[i] ^ (unsigned int)Inline(cry));
-	return Array;
-}
-
-//////////////////////////////////////////////////////////////////////////
 int rc = 0;
 int WINAPI hook_WSARecv(SOCKET s, LPWSABUF lpBuffers, DWORD dwBufferCount, LPDWORD lpNumberOfBytesRecvd, LPDWORD lpFlags, LPWSAOVERLAPPED lpOverlapped, LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine){
 	
@@ -62,8 +40,11 @@ int WINAPI hook_WSARecv(SOCKET s, LPWSABUF lpBuffers, DWORD dwBufferCount, LPDWO
 	sprintf(test, "logs\\Recv\\WSARecv_%i.bin", rc);
 	Utils::DumpFile(test, lpBuffers->buf, lpBuffers->len);
 
-	unsigned char* buff = (unsigned char*)lpBuffers->buf;
-	StoCDecrypt(buff, lpBuffers->len);
+
+	byte* buff = new byte[lpBuffers->len];
+	ZeroMemory(buff, lpBuffers->len);
+	memcpy(buff, lpBuffers->buf, lpBuffers->len);
+	buff = ArcheAge::AGH::Encryption::StoCDecrypt(buff, lpBuffers->len);
 
 	ZeroMemory(test, 100);
 	sprintf(test, "logs\\Recv\\Decrypt\\Recv_%i.bin", rc);
@@ -88,6 +69,26 @@ int WINAPI hook_WSASend(SOCKET s, LPWSABUF lpBuffers, DWORD dwBufferCount, LPDWO
 	return o_WSASend(s, lpBuffers, dwBufferCount, lpNumberOfBytesSent, dwFlags, lpOverlapped, lpCompletionRoutine);
 }
 
+typedef byte* (__cdecl* t_Encrypthook)(DWORD a2, DWORD a3);
+t_Encrypthook o_Encrypthook;
+
+int testc = 0;
+byte* test;
+__declspec(naked) byte* __cdecl Encrypthook(DWORD a2, DWORD a3){
+
+	__asm pushad
+	Logger(lINFO, "AGH", "Encrypt hook (%i): a2: 0x%08X a3: 0x%08X", testc, a2, a3);
+
+	Logger(lINFO, "AGH", "HexDump: a2: 0x%X a3(0x%X)", a2, a3);
+	Utils::HexDump((void*)a2, a3);
+
+	testc++;
+
+	__asm popad
+	_asm jmp o_Encrypthook;
+}
+
+
 //////////////////////////////////////////////////////////////////////////
 namespace ArcheAge
 {
@@ -108,6 +109,22 @@ namespace ArcheAge
 			while(GetModuleHandle(TEXT("ws2_32.dll")) == 0 )
 				Sleep(10);
 
+			while (GetModuleHandle(TEXT("crynetwork.dll")) == 0)
+				Sleep(10);
+
+
+	/*		Logger(lINFO, "AGH", "crynetwork.dll: 0x%08X", GetModuleHandle("crynetwork.dll"));
+			Logger(lINFO, "AGH", "crynetwork.dll + Encrypt: 0x%08X", (GetModuleHandle("crynetwork.dll") + 0x8D7EF));
+*/
+			HMODULE hMainModule = GetModuleHandle("crynetwork.dll");
+			DWORD dCodeSize = Utils::GetSizeOfCode(hMainModule);
+			DWORD dCodeOffset = Utils::OffsetToCode(hMainModule);
+			DWORD dEntryPoint = (DWORD)hMainModule + dCodeOffset;
+
+			DWORD dwEncrypt = Utils::FindPattern((DWORD)dEntryPoint, dCodeSize, (PBYTE)"\x55\x8B\xEC\x51\x53\x56\x8B\xF0", "xxxxxxxx" );
+			Logger(lINFO, "AGH", "crynetwork.dll + Encrypt: 0x%08X", dwEncrypt);
+
+			o_Encrypthook = (t_Encrypthook)DetourFunction((PBYTE)dwEncrypt, (PBYTE)Encrypthook);
 			o_WSASend = (t_WSASend)DetourFunction((PBYTE)GetProcAddress(GetModuleHandle("ws2_32.dll"), "WSASend"), (PBYTE)hook_WSASend);
 			o_WSARecv = (t_WSARecv)DetourFunction((PBYTE)GetProcAddress(GetModuleHandle("ws2_32.dll"), "WSARecv"), (PBYTE)hook_WSARecv);
 		}

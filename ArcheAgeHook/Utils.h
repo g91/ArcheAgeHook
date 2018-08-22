@@ -20,6 +20,7 @@ public:
 	static DWORD HookFunction(LPCSTR lpModule, LPCSTR lpFuncName, LPVOID lpFunction, unsigned char *lpBackup);
 	static BOOL UnHookFunction(LPCSTR lpModule, LPCSTR lpFuncName, unsigned char *lpBackup);
 	static void DumpFile(char* name, const char* buffer, int length);
+	static DWORD FindPattern(DWORD dwStart, DWORD dwLen, BYTE* pszPatt, const char pszMask[]);
 };
 
 #endif

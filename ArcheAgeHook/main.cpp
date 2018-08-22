@@ -7,6 +7,11 @@ unsigned long ModuleThread(void*)
 	Utils::AllocateConsole("ArcheAgeAGH - Debug Console");
 	Logger(lINFO, "AGH", "Starting ArcheAge Hook");
 
+	// mkdir base dir
+	_mkdir(".\\logs");
+	_mkdir(".\\logs\\Recv");
+	_mkdir(".\\logs\\Recv\\Decrypt");
+
 	Logger(lINFO, "AGH", "Hooking ArcheAge CreateWindowEx");
 	ArcheAge::AGH::Hooks::HookCreateWindowEx();
 

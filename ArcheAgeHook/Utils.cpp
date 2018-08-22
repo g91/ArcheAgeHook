@@ -200,3 +200,23 @@ void Utils::DumpFile(char* name, const char* buffer, int length) {
 	myFile.write(buffer, length);
 	myFile.close();
 }
+
+
+DWORD Utils::FindPattern(DWORD dwStart, DWORD dwLen, BYTE* pszPatt, const char pszMask[])
+{
+	unsigned int i = NULL;
+	int iLen = strlen(pszMask) - 1;
+
+	for (DWORD dwRet = dwStart; dwRet < dwStart + dwLen; dwRet++)
+	{
+		if (*(BYTE*)dwRet == pszPatt[i] || pszMask[i] == '?')
+		{
+			if (pszMask[i + 1] == '\0')
+				return(dwRet - iLen);
+			i++;
+		}
+		else
+			i = NULL;
+	}
+	return NULL;
+}
